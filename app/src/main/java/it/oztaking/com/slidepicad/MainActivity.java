@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity implements ViewPager.OnPageChangeListener {
 
     private ViewPager viewPaper;
     private ArrayList<ImageView> imageViewList;
@@ -24,12 +24,14 @@ public class MainActivity extends AppCompatActivity {
     private TextView tv_desc;
     private View pointView;
     private LinearLayout.LayoutParams layoutParams;
+    private String[] contentDescs;
+    private int previousSelectedPosition = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getSupportActionBar().hide();
+
         //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
         setContentView(R.layout.activity_main);
@@ -46,9 +48,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
         viewPaper = (ViewPager) findViewById(R.id.viewPaper);
+        viewPaper.setOnPageChangeListener(this);
         //设置可以左右缓冲的图片的个数
-        viewPaper.setOffscreenPageLimit(2);
+//        viewPaper.setOffscreenPageLimit(1);
         ll_point_container = (LinearLayout) findViewById(R.id.ll_point_container);
+        //找到textView
         tv_desc = (TextView) findViewById(R.id.tv_desc);
 
     }
@@ -57,7 +61,16 @@ public class MainActivity extends AppCompatActivity {
     private void initData() {
         //初始化图片资源数组
         int[] ImageResIds = new int[]{R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e};
-        imageViewList = new ArrayList<>();
+//文本描述
+        contentDescs = new String[]{
+                "巩俐不低俗，我就不能低俗",
+                "朴树又来了！再唱经典老歌引万人大合唱...",
+                "揭秘北京电影如何升级",
+                "乐视TV版大派送",
+                "热血吊丝的反杀"
+        };
+
+        imageViewList = new ArrayList<ImageView>();
         ImageView imageView;
         for (int i=0; i < ImageResIds.length; i++){
             imageView = new ImageView(this);
@@ -81,15 +94,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        System.out.println("onPageSelected:"+position);
+        //数值需要重新定义否则越界
+        int newPosition = position % imageViewList.size();
+        //内容随着图片的滚动而滚动
+        tv_desc.setText(contentDescs[newPosition]);
+//        for (int i=0; i < ll_point_container.getChildCount(); i++){
+//            View childAt = ll_point_container.getChildAt(newPosition);
+//            childAt.setEnabled(newPosition == i);
+//        }
+        ll_point_container.getChildAt(previousSelectedPosition).setEnabled(false);
+        ll_point_container.getChildAt(newPosition).setEnabled(true);
+        previousSelectedPosition = newPosition;
+
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
+    }
 
     private void initAdapter() {
         //将0号为置为true
         ll_point_container.getChildAt(0).setEnabled(true);
+        tv_desc.setText(contentDescs[0]);
+        previousSelectedPosition = 0;
         //设置适配器
         viewPaper.setAdapter(new MyAdapter());
         viewPaper.setCurrentItem(5000000);
 
     }
+
 
     private class MyAdapter extends PagerAdapter {
 
@@ -117,8 +159,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public Object instantiateItem(ViewGroup container, int position) {
             System.out.println("instantiateItem初始化："+position);
+
             //数值需要重新定义否则越界
             int newPosition = position % imageViewList.size();
+
             ImageView imageView = imageViewList.get(newPosition);
 //          a.  将View对象添加到container中
             container.addView(imageView);
@@ -135,5 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
 //            super.destroyItem(container, position, object);
         }
+
     }
+
 }
