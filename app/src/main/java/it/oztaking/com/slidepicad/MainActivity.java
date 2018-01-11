@@ -12,6 +12,8 @@ import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
+
 
 import java.util.ArrayList;
 
@@ -22,10 +24,12 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private LinearLayout ll_point_container;
     private TextView tv_desc;
-    private View pointView;
-    private LinearLayout.LayoutParams layoutParams;
+
+
     private String[] contentDescs;
     private int previousSelectedPosition = 0;
+    private int[] imageResIds;
+    private boolean isRunning = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +46,37 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         initData();
 //        Controller控制器
         initAdapter();
+
+        //图片的自动滚动
+        autoSlidingPic();
     }
 
+    private void autoSlidingPic() {
+        new Thread(){
+            public void run(){
+            isRunning = true;
+            while (isRunning){
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        viewPaper.setCurrentItem(viewPaper.getCurrentItem()+1);
+                    }
+                });
 
+            }
+        }}.start();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        isRunning = false;
+    }
 
     private void initView() {
         viewPaper = (ViewPager) findViewById(R.id.viewPaper);
@@ -60,7 +92,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
     private void initData() {
         //初始化图片资源数组
-        int[] ImageResIds = new int[]{R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e};
+        imageResIds = new int[]{R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e};
 //文本描述
         contentDescs = new String[]{
                 "巩俐不低俗，我就不能低俗",
@@ -72,9 +104,11 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 
         imageViewList = new ArrayList<ImageView>();
         ImageView imageView;
-        for (int i=0; i < ImageResIds.length; i++){
+        View pointView;
+        LinearLayout.LayoutParams layoutParams;
+        for (int i = 0; i < imageResIds.length; i++){
             imageView = new ImageView(this);
-            imageView.setBackgroundResource(ImageResIds[i]);
+            imageView.setBackgroundResource(imageResIds[i]);
             imageViewList.add(imageView);
 
             //加小白点 指示器
@@ -84,10 +118,10 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
             //修改指示器的距离
             if (i != 0){
                 layoutParams.leftMargin = 10;
-                //变为灰色
-                pointView.setEnabled(false);
-                ll_point_container.addView(pointView, layoutParams);
             }
+            //变为灰色
+            pointView.setEnabled(false);
+            ll_point_container.addView(pointView, layoutParams);
 
         }
 
@@ -104,6 +138,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
         System.out.println("onPageSelected:"+position);
         //数值需要重新定义否则越界
         int newPosition = position % imageViewList.size();
+        System.out.println("ImageViewList.size() 资源的大小"+imageViewList.size());
         //内容随着图片的滚动而滚动
         tv_desc.setText(contentDescs[newPosition]);
 //        for (int i=0; i < ll_point_container.getChildCount(); i++){
@@ -112,6 +147,7 @@ public class MainActivity extends Activity implements ViewPager.OnPageChangeList
 //        }
         ll_point_container.getChildAt(previousSelectedPosition).setEnabled(false);
         ll_point_container.getChildAt(newPosition).setEnabled(true);
+        Toast.makeText(getApplicationContext(),"当前选中条目"+newPosition,Toast.LENGTH_SHORT).show();
         previousSelectedPosition = newPosition;
 
     }
