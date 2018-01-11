@@ -22,6 +22,8 @@ public class MainActivity extends AppCompatActivity {
 
     private LinearLayout ll_point_container;
     private TextView tv_desc;
+    private View pointView;
+    private LinearLayout.LayoutParams layoutParams;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,19 @@ public class MainActivity extends AppCompatActivity {
             imageView = new ImageView(this);
             imageView.setBackgroundResource(ImageResIds[i]);
             imageViewList.add(imageView);
+
+            //加小白点 指示器
+            pointView = new View(this);
+            pointView.setBackgroundResource(R.drawable.selector_bg_point);
+            layoutParams = new LinearLayout.LayoutParams(10,10);
+            //修改指示器的距离
+            if (i != 0){
+                layoutParams.leftMargin = 10;
+                //变为灰色
+                pointView.setEnabled(false);
+                ll_point_container.addView(pointView, layoutParams);
+            }
+
         }
 
     }
@@ -68,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void initAdapter() {
-
+        //将0号为置为true
+        ll_point_container.getChildAt(0).setEnabled(true);
         //设置适配器
         viewPaper.setAdapter(new MyAdapter());
         viewPaper.setCurrentItem(5000000);
