@@ -8,7 +8,7 @@
     <!--最外层的布局-->
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="160dp">
+        android:layout_height="200dp">
 
         <!--滚动图片的布局-->
         <android.support.v4.view.ViewPager
